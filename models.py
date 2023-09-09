@@ -1,9 +1,14 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import declarative_base, sessionmaker
-from decouple import config
+from dotenv import dotenv_values
+config = dotenv_values(".env")
 
-engine = create_engine(config("DB_URL"))
+db_url = config.get("DB_URL")
+if not db_url:
+    raise ValueError("DB_URL is not set in .env file")
+
+engine = create_engine(db_url)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 

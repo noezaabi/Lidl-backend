@@ -1,15 +1,17 @@
 # Third-party imports
 import openai
 from fastapi import FastAPI, Form, Depends
-from decouple import config
+from dotenv import dotenv_values
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-import stripe
 import json
+import stripe
 
 # Internal imports
 from models import Conversation, SessionLocal, Item
 from utils import send_message, logger
+
+config = dotenv_values(".env")
 
 conversations = {}
 
@@ -40,8 +42,8 @@ def get_price_id(item_name):
 
 app = FastAPI()
 # Set up the OpenAI API client
-openai.api_key = config("OPENAI_API_KEY")
-whatsapp_number = config("TO_NUMBER")
+openai.api_key = config["OPENAI_API_KEY"]
+whatsapp_number = config["TO_NUMBER"]
 
 def getMenu():
     # Create a new session
