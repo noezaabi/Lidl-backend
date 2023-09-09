@@ -21,6 +21,7 @@ class Item(Base):
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     price = Column(Float, nullable=False)
+    stripePriceId = Column(String, nullable=False)
 
 
 Base.metadata.create_all(engine)

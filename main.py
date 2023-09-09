@@ -68,44 +68,24 @@ def get_db():
 
 
 
+
+
 functions = [
     {
         "name": "get_payment_link",
         "description": "Creates a Stripe payment link, when the customer has confirmed his order and provided his shipping address.",
         "parameters": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "item": {"type": "string", "description": "Exact item name as described in the menu."},
-                    "quantity":{"type":"integer", "description": "quantity of the item selected by the user."}
-                },
-                "required": ["item","quantity"]
-            }
+            "type": "object",
+            "properties": {
+                "item": {"type": "string", "description": "Exact item name as described in the menu."},
+                "quantity":{"type":"string", "description": "quantity of the item selected by the user."}
+                
+            },
+            "required": ["price_id","quantity"]
         },
         "return_type": "string"
     }
 ]
-
-
-
-
-# functions = [
-#     {
-#         "name": "get_payment_link",
-#         "description": "Creates a Stripe payment link, when the customer has confirmed his order and provided his shipping address.",
-#         "parameters": {
-#             "type": "object",
-#             "properties": {
-#                 "item": {"type": "string", "description": "Exact item name as described in the menu."},
-#                 "quantity":{"type":"string", "description": "quantity of the item selected by the user."}
-                
-#             },
-#             "required": ["price_id","quantity"]
-#         },
-#         "return_type": "string"
-#     }
-# ]
 
 @app.post("/message")
 async def reply(Body: str = Form(), db: Session = Depends(get_db)):
@@ -126,14 +106,15 @@ Constraints:
 
 Initial Interaction:
 
-    When a customer initiates a conversation, your first reply should be something along the lines of: "Hey! Absolutely, here is our menu: {getMenu()}".
+    When a customer initiates a conversation, your first reply should be something along the lines of: "Hey! I got you, here is our menu: {getMenu()}".
     You are free to adapt your tone to the tone employed by the customer to maximise customer satisfaction and connection.
     
 Behavior Guidelines:
 
     Maintain focus on assisting the customer to order food.
     Offer food recommendations only from the menu.
-    If a customer requests an item not on the menu, ask if they meant a different item that is available.
+    If a customer requests an item not on the menu, ask if they meant a different item that is available. The item chosen must strictly be one that is on the menu.
+    Try to be as concise as possible.
 
 Ordering Procedure:
 
@@ -173,7 +154,7 @@ Is this accurate?
         messages=conversations[user_id],
         functions=functions,
         function_call='auto',
-        temperature=0.4,
+        temperature=0.1,
     )
     
     # Retrieve and store assistant message
@@ -190,8 +171,6 @@ Is this accurate?
              item_name=json.loads(function_call.arguments).get('item')
              quantity=json.loads(function_call.arguments).get('quantity')
              price_id=get_price_id(item_name)
-             print(price_id)
-             print(item_name)
              payment_link = get_payment_link(price_id,quantity)
              send_message(whatsapp_number, f'Excellent. Here is your payment link:{payment_link}')
         
